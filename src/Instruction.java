@@ -97,9 +97,13 @@ public class Instruction
         regs.put("R10", "1010");
         regs.put("R11", "1011");
         regs.put("PC", "1100");
+        regs.put("R12", "1100");
         regs.put("RA", "1101");
+        regs.put("R13", "1110");
         regs.put("SP", "1110");
+        regs.put("R14", "1110");
         regs.put("AR", "1111");
+        regs.put("R15", "1111");
 
     }
 
