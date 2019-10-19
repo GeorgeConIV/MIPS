@@ -78,7 +78,7 @@ public class FileManipulator
         while(fileScan.hasNextLine())
         {
             String toBeStored = fileScan.nextLine();
-            stringList.add(toBeStored);
+            stringList.add(toBeStored.toUpperCase());
         }
 
         return stringList;
