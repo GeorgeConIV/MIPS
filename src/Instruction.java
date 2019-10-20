@@ -24,14 +24,16 @@ public class Instruction
     String type;
     String sel;
     String immBin;
+    Integer pc;
 
     public Instruction()
     {
         initLists();
     }
 
-    public Instruction(String preIn)
+    public Instruction(String preIn, Integer pc)
     {
+        this.pc = pc;
         this.preIn = preIn;
         initLists();
     }

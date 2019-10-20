@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
 
 public class AsmScanner
 {
@@ -9,6 +10,8 @@ public class AsmScanner
     Integer prevPosition[] = {0, 0};
     Character charBuff = ' ';
     Instruction thing;
+    HashMap<String, Integer> label_map = new HashMap<>();
+    Integer pc = 0;
 
     public AsmScanner(List<String> instructions)
     {
@@ -37,6 +40,11 @@ public class AsmScanner
         return c;
     }
 
+    public Instruction getLabel()
+    {
+
+    }
+
 
     public Instruction getInstruction()
     {
@@ -59,6 +67,12 @@ public class AsmScanner
                 inst += charBuff;
                 charBuff = getChar();
             }while(Character.isLetter(charBuff));
+
+            if(inst.endsWith(":"))
+            {
+                label_map.put(inst, pc);
+                return null;
+            }
 
             if(inst.endsWith("NE"))
             {
@@ -101,7 +115,7 @@ public class AsmScanner
             }
 
             switch(inst)
-            {
+            {                
                 case "NOP" :
                     in.setOpcode("00000");
                     in.setImm("00000000000");
@@ -377,7 +391,12 @@ public class AsmScanner
         List<Instruction> insts = new ArrayList<>();
         while(insts.size() < instructions.size())
         {
-            insts.add(getInstruction());
+            Instruction ins = getInstruction();
+            if (ins)
+            {
+                insts.add(getInstruction());
+                pc += 2;
+            }
         }
 
         return insts;
