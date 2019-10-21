@@ -78,6 +78,11 @@ class Instruction:
         "inc"   :   4,
         "dec"   :   8
     }
+    shift_sel_table = {
+        "lsl"   :   0,
+        "lsr"   :   1,
+        "asr"   :   2
+    }
     def __init__(self, line, line_num, typ, pc, opcode=None, rs=None, rt=None, imm=None, label=None, cond=None):
         self.line = line
         self.ln = line_num
@@ -106,7 +111,8 @@ class Instruction:
         'n' : nType,
         'u' : uType,
         'c' : cType,
-        'b' : bType
+        'b' : bType,
+        'd' : dType
     }
     def binary(self):
         return self.bit_jump_table[self.type]
@@ -136,4 +142,57 @@ class Instruction:
         hi = op << 3 | (address & 0x700) >> 8
         lo = address & 0xFF
         return bytearray([hi,lo])
+
+    def sType(self):
+        op = self.opcode_table[self.opcode]
+        rs = self.reg_table[self.rs]
+        imm = self.imm & 0xF
+        sel = self.shift_sel_table[self.opcode]
         
+        hi = op << 3 | (rs & 0b1110) >> 1
+        lo = (rs & 1) << 7 | imm << 3 | sel
+        return bytearray([hi,lo])
+
+    def nType(self):
+        op = self.opcode_table[self.opcode]
+        rs = self.reg_table[self.rs]
+        cond = self.cond_table[self.cond]
+
+        hi = op << 3 | (rs & 0b1110) >> 1
+        lo = (rs & 1) << 7 | cond
+        return bytearray([hi,lo])
+
+    def uType(self):
+        hi = self.opcode_table[self.opcode] << 3
+        lo = 0
+        return bytearray([hi,lo])
+
+    def cType(self):
+        op = self.opcode_table[self.opcode]
+        imm = self.imm
+
+        hi = op << 3 | (imm & 0x700) >> 8
+        lo = imm & 0xFF
+        return bytearray([hi,lo])
+
+    def bType(self):
+        op = self.opcode_table[self.opcode]
+        address = self.relative(self.label)
+        cond = self.cond_table[self.cond]
+
+        if address < -127 or 128 < address:
+            ErrorPrint(self.ln, self.line, "Error: Label is out of range, refactor using LDA and BR")
+            exit()
+
+        hi = op << 3 | (address & 0xE) >> 5
+        lo = (address & 0x1F) << 3 | cond
+        return bytearray([hi,lo])
+
+    def dType(self):
+        hi = (self.imm & 0xFF00) >> 8
+        lo = self.imm & 0xFf
+        return bytearray([hi,lo])
+
+    def debug(self):
+        print(f"{self.ln}: {self.line}")
+        print(bin(self.binary))
