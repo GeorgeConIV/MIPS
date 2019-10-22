@@ -142,10 +142,14 @@ class Instruction:
     def nType(self):
         op = self.opcode_table[self.opcode]
         rs = self.reg_table[self.rs]
+        sel = self.single_op_table.get(self.opcode)
         cond = self.cond_table[self.cond]
 
+        if sel is None:
+            sel = 0
+
         hi = op << 3 | (rs & 0b1110) >> 1
-        lo = (rs & 1) << 7 | cond
+        lo = (rs & 1) << 7 | sel << 3 | cond
         return bytearray([hi,lo])
 
     def uType(self):
