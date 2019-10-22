@@ -24,7 +24,6 @@ xori
 
 j-type:
 lda
-ldc
 str
 call
 

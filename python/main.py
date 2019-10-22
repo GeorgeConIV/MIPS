@@ -25,5 +25,5 @@ for instr in instr_list:
     instr.debug()
     binary.extend(instr.binary())
 
-output_f = open(sys.argv[1].split('.')[0].extend(".xgxe"), "wb")
+output_f = open(sys.argv[1].split('.')[0] + ".cum", "wb")
 output_f.write(binary)

@@ -28,7 +28,7 @@ class Instruction:
         "lda"   :   0x15,
         "ldc"   :   0x16,
         "ldo"   :   0x17,
-        "srt"   :   0x18,
+        "str"   :   0x18,
         "sto"   :   0x19,
         "b"     :   0x1A,
         "br"    :   0x1B,
@@ -88,12 +88,12 @@ class Instruction:
         self.ln = line_num
         self.type = typ
         self.pc = pc
-        self.opcode = opcode.lower()
-        self.rs = rs.lower()
-        self.rt = rt.lower()
+        self.opcode = opcode.lower() if opcode is not None else opcode
+        self.rs = rs.lower() if rs is not None else rs
+        self.rt = rt.lower() if rt is not None else rt
         self.imm = imm
         self.label = label
-        self.cond = cond.lower()
+        self.cond = cond.lower() if cond is not None else cond
 
     def relative(self, label):
         try:
@@ -102,20 +102,6 @@ class Instruction:
         except:
             ErrorPrint(self.ln, self.line, "Error: Label was not defined")
             exit()
-
-    bit_jump_table = {
-        'r' : rType,
-        'i' : iType,
-        'j' : jType,
-        's' : sType,
-        'n' : nType,
-        'u' : uType,
-        'c' : cType,
-        'b' : bType,
-        'd' : dType
-    }
-    def binary(self):
-        return self.bit_jump_table[self.type]
 
     def rType(self):
         op = self.opcode_table[self.opcode]
@@ -184,7 +170,7 @@ class Instruction:
             ErrorPrint(self.ln, self.line, "Error: Label is out of range, refactor using LDA and BR")
             exit()
 
-        hi = op << 3 | (address & 0xE) >> 5
+        hi = op << 3 | (address & 0xE0) >> 5
         lo = (address & 0x1F) << 3 | cond
         return bytearray([hi,lo])
 
@@ -193,6 +179,20 @@ class Instruction:
         lo = self.imm & 0xFf
         return bytearray([hi,lo])
 
+    bit_jump_table = {
+        'r' : rType,
+        'i' : iType,
+        'j' : jType,
+        's' : sType,
+        'n' : nType,
+        'u' : uType,
+        'c' : cType,
+        'b' : bType,
+        'd' : dType
+    }
+    def binary(self):
+        return self.bit_jump_table[self.type](self)
+    
     def debug(self):
         print(f"{self.ln}: {self.line}")
-        print(bin(self.binary))
+        print([bin(i) for i in self.binary()])
