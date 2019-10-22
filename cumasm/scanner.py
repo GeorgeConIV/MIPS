@@ -1,7 +1,7 @@
 import re
 
-from instruction import Instruction
-from globals import label_map, ErrorPrint
+from cumasm.instruction import Instruction
+from cumasm.globals import label_map, ErrorPrint
 
 
 r_type = r"\s*(\w+)(\.\w+)?\s+(\w{2,3}),\s+(\w{2,3})"

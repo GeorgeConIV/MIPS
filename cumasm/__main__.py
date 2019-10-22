@@ -2,8 +2,8 @@ import sys
 import os
 import argparse
 
-from instruction import Instruction
-from scanner import InstructionGen
+from cumasm.instruction import Instruction
+from cumasm.scanner import InstructionGen
 
 p = argparse.ArgumentParser()
 p.add_argument("-o","--output")

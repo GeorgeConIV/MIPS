@@ -1,4 +1,4 @@
-from globals import label_map, ErrorPrint
+from cumasm.globals import label_map, ErrorPrint
 
 class Instruction:
     opcode_table = {
