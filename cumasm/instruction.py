@@ -103,11 +103,25 @@ class Instruction:
             ErrorPrint(self.ln, self.line, "Error: Label was not defined")
             exit()
 
+    def register(self, reg):
+        try:
+            return self.reg_table[reg]
+        except:
+            ErrorPrint(self.ln, self.line, "Error: Register does not exist")
+            exit()
+
+    def conditional(self, cond):
+        try:
+            return self.cond_table[cond]
+        except:
+            ErrorPrint(self.ln, self.line, "Error: Conditional invalid")
+            exit()
+
     def rType(self):
         op = self.opcode_table[self.opcode]
-        rs = self.reg_table[self.rs]
-        rt = self.reg_table[self.rt]
-        cond = self.cond_table[self.cond]
+        rs = self.register(self.rs)
+        rt = self.register(self.rt)
+        cond = self.conditional(self.cond)
         
         hi = op << 3 | (rs & 0b1110) >> 1
         lo = (rs & 1) << 7 | rt << 3 | cond
@@ -115,7 +129,7 @@ class Instruction:
 
     def iType(self):
         op = self.opcode_table[self.opcode]
-        rs = self.reg_table[self.rs]
+        rs = self.register(self.rs)
         
         hi = op << 3 | (rs & 0b1110) >> 1
         lo = (rs & 1) << 7 | self.imm
@@ -125,13 +139,17 @@ class Instruction:
         op = self.opcode_table[self.opcode]
         address = self.relative(self.label)
 
+        if address < -1024 or 1023 < address:
+            ErrorPrint(self.ln, self.line, "Error: Label is out of range")
+            exit()
+
         hi = op << 3 | (address & 0x700) >> 8
         lo = address & 0xFF
         return bytearray([hi,lo])
 
     def sType(self):
         op = self.opcode_table[self.opcode]
-        rs = self.reg_table[self.rs]
+        rs = self.register(self.rs)
         imm = self.imm & 0xF
         sel = self.shift_sel_table[self.opcode]
         
@@ -141,12 +159,9 @@ class Instruction:
 
     def nType(self):
         op = self.opcode_table[self.opcode]
-        rs = self.reg_table[self.rs]
-        sel = self.single_op_table.get(self.opcode)
-        cond = self.cond_table[self.cond]
-
-        if sel is None:
-            sel = 0
+        rs = self.register(self.rs)
+        sel = self.single_op_table.get(self.opcode, 0)
+        cond = self.conditional(self.cond)
 
         hi = op << 3 | (rs & 0b1110) >> 1
         lo = (rs & 1) << 7 | sel << 3 | cond
@@ -168,9 +183,9 @@ class Instruction:
     def bType(self):
         op = self.opcode_table[self.opcode]
         address = self.relative(self.label)
-        cond = self.cond_table[self.cond]
+        cond = self.conditional(self.cond)
 
-        if address < -127 or 128 < address:
+        if address < -128 or 127 < address:
             ErrorPrint(self.ln, self.line, "Error: Label is out of range, refactor using LDA and BR")
             exit()
 

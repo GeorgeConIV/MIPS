@@ -28,8 +28,8 @@ def CreateIType(pc, line, line_num):
     if m.group(2) is not None:
         ErrorPrint(line_num, line, "Warning: i-type instructions are not conditional")
     im = int(m.group(4))
-    if im < -63 or 127 < im:
-        raise AssemblerError("Error: Immediate is too large (range [-63, 127])")
+    if im < -63 or 62 < im:
+        raise AssemblerError("Error: Immediate is too large (range [-63, 62])")
     return Instruction(
         line, line_num, "i", pc,
         opcode  =   m.group(1),
@@ -100,8 +100,8 @@ def CreateDType(pc, line, line_num):
     if m is None:
         raise AssemblerError("Error: DW not formatted correctly (dw imm)")
     im = int(m.group(1))
-    if im < -32767 or 65535 < im:
-        raise AssemblerError("Error: Value is too large (range [-32767, 65535])")
+    if im < -32767 or 32766 < im:
+        raise AssemblerError("Error: Value is too large (range [-32767, 32766])")
     return Instruction(
         line, line_num, "d", pc,
         imm  =   im
@@ -113,8 +113,8 @@ def CreateCType(pc, line, line_num):
     if m is None:
         raise AssemblerError("Error: Operands do not match c-type (Imm)")
     im = int(m.group(3))
-    if im < -1023 or 2047 < im:
-        raise AssemblerError("Error: Immediate is too large (range [-1023, 2047])")
+    if im < -1024 or 1023 < im:
+        raise AssemblerError("Error: Immediate is too large (range [-1023, 1023])")
     return Instruction(
         line, line_num, "c", pc,
         opcode  =   m.group(1),
@@ -171,12 +171,12 @@ def InstructionGen(filename):
                     line = line.split(':')[1]       # remove label from string
                 m = re.match(instr, line)   # find instr
                 if m is not None:
-                    yield instr_switch[m.group(0).lower().lstrip()](pc, line, line_num) # function table that returns an instruction object
+                    yield instr_switch[m.group(1).lower()](pc, line, line_num) # function table that returns an instruction object
                 line_num += 1
                 pc += 2
             except AssemblerError as ae:
                 ErrorPrint(line_num, line, ae.msg)
                 exit()
-            #except:
-            #    ErrorPrint(line_num, line, "Error: Invalid opcode on this line")
-            #    exit()
+            except:
+                ErrorPrint(line_num, line, "Error: Invalid opcode on this line")
+                exit()
