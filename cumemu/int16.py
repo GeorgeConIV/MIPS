@@ -18,6 +18,20 @@ class Int16:
     def __sub__(self, y):
         return Int16(self.actualValue() - y.actualValue())
 
+    def __str__(self):
+        returnStr = bin(self.val).split('b')[1]
+
+        if len(returnStr) < 16:
+            length = 16 - len(returnStr)
+            for i in range(0, length):
+                returnStr = '0' + returnStr
+
+        elif len(returnStr) > 16:
+            length = len(returnStr) - 16
+            returnStr = returnStr[length:]
+
+        return returnStr
+
     # please implement other overloaded operators
     # as well as __str__ (which is python's toString())
     # __str__ should print out a binary representation...
