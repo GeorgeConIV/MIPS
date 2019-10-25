@@ -1,9 +1,9 @@
         nop
         add.ne  r0, r1
-        addi	r0, 69
+        addi	r0, 50
 x:      dw      500
         sub     r3, r4
-        subi    r3, 69
+        subi    r3, 50
         mul     r2, r5
         muli    r2, 5
         div     r6, r7
@@ -26,7 +26,7 @@ shifts:
         not     r0 
         bic     ar, r1
         lda     x 
-        ldc     2000
+        ldc     1000
         ldo     r0, r1 
         str     x 
         br      r0

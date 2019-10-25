@@ -28,8 +28,8 @@ def CreateIType(pc, line, line_num):
     if m.group(2) is not None:
         ErrorPrint(line_num, line, "Warning: i-type instructions are not conditional")
     im = int(m.group(4))
-    if im < -63 or 62 < im:
-        raise AssemblerError("Error: Immediate is too large (range [-63, 62])")
+    if im < -64 or 63 < im:
+        raise AssemblerError("Error: Immediate is too large (range [-64, 63])")
     return Instruction(
         line, line_num, "i", pc,
         opcode  =   m.group(1),
@@ -94,7 +94,7 @@ def CreateUType(pc, line, line_num):
         opcode  =   m.group(1)
     )
 
-d_type = r"\s*\w{2}\s*(\d+)"
+d_type = r"\s*\w{2}\s*(\d+(?!,))"
 def CreateDType(pc, line, line_num):
     m = re.match(d_type, line)
     if m is None:
@@ -114,7 +114,7 @@ def CreateCType(pc, line, line_num):
         raise AssemblerError("Error: Operands do not match c-type (Imm)")
     im = int(m.group(3))
     if im < -1024 or 1023 < im:
-        raise AssemblerError("Error: Immediate is too large (range [-1023, 1023])")
+        raise AssemblerError("Error: Immediate is too large (range [-1024, 1023])")
     return Instruction(
         line, line_num, "c", pc,
         opcode  =   m.group(1),
