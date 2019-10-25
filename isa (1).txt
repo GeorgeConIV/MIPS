@@ -1,0 +1,221 @@
+Condition codes
+	000	NULL
+	001 EQ
+	010 NE
+	011 LT
+	100 GT
+	101 LTE
+	110 GTE
+	111 EQZ
+
+Opcode table
+	00000 NOP
+	00001 ADD
+	00010 ADDI
+	00011 SUB
+	00100 SUBI
+	00101 MUL
+	00110 MULI
+	00111 DIV
+	01000 DIVI
+	01001 SHIFT OPS
+	01010 TAR
+	01011 MOV
+	01100 CMP
+	01101 AND
+	01110 ANDI
+	01111 OR
+	10000 ORI 
+	10001 XOR
+	10010 XORI
+	10011 NOT
+	10100 BIC 
+	10101 LDA
+	10110 LDC
+	10111 LDO
+	11000 SRT
+	11001 STO
+	11010 B
+	11011 BR
+	11100 CALL
+	11101 RET
+	11110 PUSH
+	11111 SYSCALL
+	
+register table
+	0000 R0
+	0001 R1
+	0010 R2
+	0011 R3
+	0100 R4
+	0101 R5
+	0110 R6 
+	0111 R7
+	1000 R8
+	1001 R9
+	1010 R10
+	1011 R11
+	1100 PC
+	1101 RA
+	1110 SP
+	1111 AR
+
+NOP - 0x00
+Stalls for one cycle
+Encoding - 00000 00000000000
+           op    unused
+ADD - 0x01
+Adds two registers and stores in accumulator
+Encoding - 00001 0000 0000 000
+           op    Rs   Rt   cond
+		   
+ADDI - 0x02
+Adds a register to an immediate and stores in accumulator
+Encoding - 00010 0000 0000000
+           op    Rs   imm
+		   
+SUB - 0x03
+Subtracts Rt from Rs and stores in accumulator
+Encoding - 00011 0000 0000 000
+           op    Rs   Rt   cond
+		   
+SUBI - 0x04
+Subtracts an immediate from Rs and stores in accumulator
+Encoding - 00100 0000 0000000
+           op    Rs   imm
+		   
+MUL - 0x05
+Multiplies Rs by Rt and stores low word in accumulator
+Encoding - 00101 0000 0000 000
+           op    Rs   Rt   cond
+		   
+MULI - 0x06
+Multiplies Rs by immediate and stores low word in accumulator
+Encoding - 00110 0000 0000000
+           op    Rs   imm
+		   
+DIV - 0x07
+Divides Rs by Rt and stores low word in accumulator
+Encoding - 00111 0000 0000 000
+           op    Rs   Rt   cond
+		   
+DIVI - 0x08
+Divides Rs by immediate and stores low word in accumulator
+Encoding - 01000 0000 0000000
+           op    Rs   imm
+		   
+LSL, LSR, ASR - 0x09
+Shifts Rs left by immediate and stores result in accumulator
+Encoding - 01001 0000 0000 000
+           op    Rs   imm   type (00 - lsl, 01 - lsr, 10 - asr)
+
+TAR - 0x0A
+Transfers accumulator to Rs
+Encoding - 01010 0000 0000     000
+		   op    Rs   unused   cond
+		   
+MOV - 0x0B
+Moves Rt to Rs
+Encoding - 01011 0000 0000 000
+		   op    Rs   Rt   cond
+
+CMP - 0x0C
+Subtracts Rt from Rs but only sets the conditional flags
+Encoding - 01100 0000 0000 000
+		   op    Rs   Rt   cond
+// not a lot of reason to have conditionals for compare... but maybe add in TST, NCMP, others?
+
+AND - 0x0D
+Takes logical AND of Rs and Rt and stores in accumulator
+Encoding - 01101 0000 0000 000
+		   op    Rs   Rt   cond
+		   
+ANDI - 0x0E
+Takes logical AND of Rs and immediate and stores in accumulator
+Encoding - 01110 0000 0000000
+           op    Rs   imm
+		   
+OR - 0x0F
+Takes logical OR of Rs and Rt and stores in accumulator
+Encoding - 01111 0000 0000 000
+           op    Rs   Rt   imm
+		   
+ORI - 0x10
+Takes logical OR of Rs and immediate and stores in accumulator
+Encoding - 10000 0000 0000000
+           op    Rs   imm
+		  
+XOR - 0x11
+Takes logical XOR of Rs and Rt and stores in accumulator
+Encoding - 10001 0000 0000 000
+           op    Rs   Rt   imm
+		   
+XORI - 0x12
+Takes logical XOR of Rs and immediate and stores in accumulator
+Encoding - 10010 0000 0000000
+           op    Rs   imm		
+
+NOT - 0x13
+Takes logical NOT of Rs and stores in accumulator
+Encoding - 10011 0000 0000   000
+		   op    Rs   unused cond
+
+BIC - 0x14
+Takes logical AND of Rs with negated Rt and stores in accumulator
+Encoding - 10100 0000 0000 000
+		   op    Rs   Rt   cond
+
+LDA - 0x15
+Loads pc-relative label/address into the accumulator
+Encoding - 10101 00000000000
+		   op    label/address
+		   
+LDC - 0x16
+Loads constant into the accumulator
+Encoding - 10110 00000000000
+		   op    constant
+		   
+LDO - 0x17
+Loads from address in Rs with Rt offset, stores in accumulator
+Encoding - 10111 0000 0000 000
+		   op    Rs   Rt   cond
+		   
+STR - 0x18
+Stores accumulator into pc-relative label/address
+Encoding - 11000 00000000000
+		   op    label/address
+		   
+STO - 0x19
+Stores accumulator into address in Rs with Rt offset
+Encoding - 11001 0000 0000 000
+		   op    Rs   Rt   cond
+
+B - 0x1A
+Branch to pc-relative label/address
+Encoding - 11010 00000000 000
+		   op    label    cond
+		   
+BR - 0x1B
+Branch to address stored in Rs
+Encoding - 11011 0000 0000   000
+           op    Rs   unused cond
+		   
+CALL - 0x1C
+Call subroutine at label, push routine-sensitive registers, store PC+2 in $ra
+Encoding - 11100 00000000000
+           op    label/address
+		   
+RET - 0x1D
+Return from subroutine to $ra, pop routine-sensitive registers
+Encoding - 11101 00000000000
+           op    unused
+		   
+PUSH, POP, INC, DEC - 0x1E
+Various single-operand/no destination operations
+Encoding - 11110 0000 0000 000
+		   op    Rs   sel  cond (sel - 0001 PUSH, 0010 POP, 0100 INC, 1000 DEC)
+		   
+SYSCALL - 0x1F
+Performs a syscall, functions implementation-dependent
+Encoding - 11111 00000000000
+		   op    unused
