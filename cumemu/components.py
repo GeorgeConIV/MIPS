@@ -1,7 +1,14 @@
+import cumemu.exceptions as ex
+
 from cumemu.int16 import Int16
 
 class InstructionFetcher:
-    pass
+    def __init__(self, mem):
+        self.pc = 0
+        self.mem = mem
+
+    def fetch(self, branch=0):
+        pass
 
 class InstructionDecoder:
     def bitToInt16(self, x, bit_len):
@@ -21,10 +28,10 @@ class InstructionDecoder:
 
 class RegisterFile:
     def __init__(self):
-        self.registers = [Int16(0) for _ in range(32)]
+        self.registers = [Int16(0) for _ in range(15)]
 
     def write(self, reg, x):
-        self.registers[reg] = x
+        self.registers[reg].set(x)
 
     def read(self, reg):
         return self.registers[reg]
@@ -42,6 +49,26 @@ class ALU:
             lambda x, y : x & y,
             lambda x, y : x | y,
             lambda x, y : x ^ y,
-            lambda x, y : x & ~(y)
+            lambda x, y : x & ~y
         ][ctrl](a, b)
     
+class Memory:
+    def __init__(self):
+        self.memspace = [Int16(0) for _ in range(512)]
+
+    def writeWord(self, address, x):
+        try:
+            if address % 2 != 0:
+                raise ex.MemoryAccessFault("Address not on word boundary")
+            self.memspace[address>>1].set(x)
+        except IndexError:
+            raise ex.MemoryAccessFault("Address outside of memory space")
+
+    def readWord(self, address):
+        try:
+            if address % 2 != 0:
+                raise ex.MemoryAccessFault("Address not on word boundary")
+            return self.memspace[address>>1]
+        except IndexError:
+            raise ex.MemoryAccessFault("Address outside of memory space")
+            
