@@ -77,7 +77,7 @@ class ControlUnit:
         self.c = False
         self.v = False
 
-    self updateFlags(self, z, n, c, v):
+    def updateFlags(self, z, n, c, v):
         self.z = z
         self.n = n
         self.c = c
