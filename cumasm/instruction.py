@@ -137,11 +137,16 @@ class Instruction:
 
     def jType(self):
         op = self.opcode_table[self.opcode]
-        address = self.relative(self.label)
-
-        if address < -1024 or 1023 < address:
-            ErrorPrint(self.ln, self.line, "Error: Label is out of range")
-            exit()
+        if self.opcode == "call":
+            address = self.relative(self.label)
+            if 2047 < address:
+                ErrorPrint(self.ln, self.line, "Error: Label is out of range")
+                exit()
+        else:
+            address = label_map[self.label]
+            if address < -1024 or 1023 < address:
+                ErrorPrint(self.ln, self.line, "Error: Label is out of range")
+                exit()
 
         hi = op << 3 | (address & 0x700) >> 8
         lo = address & 0xFF

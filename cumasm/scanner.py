@@ -140,7 +140,7 @@ def CreateBType(pc, line, line_num):
 instr_switch = {
     **dict.fromkeys(["add","sub","mul","div","tar","mov","cmp","and","or","xor","bic","ldo","sto"], CreateRType),
     **dict.fromkeys(["addi","subi","muli","divi","andi","ori","xori"], CreateIType),
-    **dict.fromkeys(["lda","ldc","str","call"], CreateJType),
+    **dict.fromkeys(["lda","str","call"], CreateJType),
     **dict.fromkeys(["lsl","lsr","asr"], CreateSType),
     **dict.fromkeys(["not","br","push","pop","inc","dec"], CreateNType),
     **dict.fromkeys(["nop","ret","syscall"], CreateUType),

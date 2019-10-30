@@ -166,9 +166,9 @@ Encoding - 10100 0000 0000 000
 		   op    Rs   Rt   cond
 
 LDA - 0x15
-Loads pc-relative label/address into the accumulator
+Loads absolute label into the accumulator
 Encoding - 10101 00000000000
-		   op    label/address
+		   op    label
 		   
 LDC - 0x16
 Loads constant into the accumulator
@@ -181,9 +181,9 @@ Encoding - 10111 0000 0000 000
 		   op    Rs   Rt   cond
 		   
 STR - 0x18
-Stores accumulator into pc-relative label/address
+Stores accumulator into absolute label/address
 Encoding - 11000 00000000000
-		   op    label/address
+		   op    label
 		   
 STO - 0x19
 Stores accumulator into address in Rs with Rt offset
