@@ -2,14 +2,6 @@ import cumemu.exceptions as ex
 
 from cumemu.int16 import Int16
 
-class InstructionFetcher:
-    def __init__(self, mem):
-        self.pc = 0
-        self.mem = mem
-
-    def fetch(self, branch=0):
-        pass
-
 class InstructionDecoder:
     def bitToInt16(self, x, bit_len):
         if (x & (1 << bit_len)) != 0:
@@ -58,7 +50,7 @@ class Memory:
 
     def writeWord(self, address, x):
         try:
-            if address % 2 != 0:
+            if (address % 2) != 0:
                 raise ex.MemoryAccessFault("Address not on word boundary")
             self.memspace[address>>1].set(x)
         except IndexError:
@@ -66,9 +58,31 @@ class Memory:
 
     def readWord(self, address):
         try:
-            if address % 2 != 0:
+            if (address % 2) != 0:
                 raise ex.MemoryAccessFault("Address not on word boundary")
             return self.memspace[address>>1]
         except IndexError:
             raise ex.MemoryAccessFault("Address outside of memory space")
             
+class ControlUnit:
+    # lookup tables for the various opcodes
+    has_cond = [False, True, False, True, False, True, False, True,
+        False, False, True, True, True, True, False, True, False,
+        True, False, True, True, False, False, True, False, True,
+        True, True, False, False, True, False]
+
+    def __init__(self):
+        self.z = False
+        self.n = False
+        self.c = False
+        self.v = False
+
+    self updateFlags(self, z, n, c, v):
+        self.z = z
+        self.n = n
+        self.c = c
+        self.v = v
+
+    def update(self, op, cond, sel):
+        pass
+        # 

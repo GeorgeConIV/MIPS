@@ -138,7 +138,7 @@ Encoding - 01110 0000 0000000
 OR - 0x0F
 Takes logical OR of Rs and Rt and stores in accumulator
 Encoding - 01111 0000 0000 000
-           op    Rs   Rt   imm
+           op    Rs   Rt   cond
 		   
 ORI - 0x10
 Takes logical OR of Rs and immediate and stores in accumulator
@@ -148,7 +148,7 @@ Encoding - 10000 0000 0000000
 XOR - 0x11
 Takes logical XOR of Rs and Rt and stores in accumulator
 Encoding - 10001 0000 0000 000
-           op    Rs   Rt   imm
+           op    Rs   Rt   cond
 		   
 XORI - 0x12
 Takes logical XOR of Rs and immediate and stores in accumulator
