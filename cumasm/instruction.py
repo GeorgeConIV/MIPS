@@ -63,6 +63,7 @@ class Instruction:
         "r9"    :   0x9,
         "r10"   :   0xA,
         "r11"   :   0xB,
+        "rz"    :   0xB,
         "pc"    :   0xC,
         "r12"   :   0xC,
         "ra"    :   0xD,
