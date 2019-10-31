@@ -41,7 +41,9 @@ class ALU:
             lambda x, y : x & y,
             lambda x, y : x | y,
             lambda x, y : x ^ y,
-            lambda x, y : x & ~y
+            lambda x, y : x & ~y,
+            lambda x, y : x << y,
+            lambda x, y : x >> y
         ][ctrl](a, b)
     
 class Memory:
@@ -77,12 +79,236 @@ class ControlUnit:
         self.c = False
         self.v = False
 
+        self.RegWr = False
+        self.Push = False
+        self.Pop = False
+        self.RegDst = 0
+        self.ImmSel = 0
+        self.ALUSrc = 0
+        self.BAdd = 0
+        self.BrSel = 0
+        self.ALUCntr = 0
+        self.MemSel = 0
+        self.MemRd = False
+        self.MemWr = False
+        self.NotSel = 0
+        self.WbSel = 0
+        self.Call = False
+        self.Ret = False
+
     def updateFlags(self, z, n, c, v):
         self.z = z
         self.n = n
         self.c = c
         self.v = v
 
+    def checkCond(self, op):
+        if op == 0:
+            return True
+
+        elif op == 1:
+            if self.z == 1:
+                return True
+            else:
+                return False
+
+        elif op == 2:
+            if self.z == 1:
+                return False
+            else:
+                return True
+
+        elif op == 3:
+            if self.n != self.v:
+                return True
+            else:
+                return False
+
+        elif op == 4:
+            if self.z or (self.n != self.v) == False:
+                return True
+            else:
+                return False
+
+        elif op == 5:
+            if self.z or (self.n != self.v):
+                return True
+            else:
+                return False
+
+        elif op == 6:
+            if self.n != self.v == False:
+                return True
+            else:
+                return False
+
+        elif op == 7:
+            if self.z==1:
+                return True
+            else:
+                return False
+
+    def updateSigs(self, RegWr = False, Push = False, Pop = False, RegDst = 0, ImmSel = 0,
+                   ALUSrc = 0, ALUCntr = 0, BAdd = 0, BrSel = 0, MemSel = 0, MemRd = False,
+                   MemWr = False, NotSel = 0, WbSel = 1, Call = False, Ret = False):
+        self.RegWr = RegWr
+        self.Push = Push
+        self.Pop = Pop
+        self.RegDst = RegDst
+        self.ImmSel = ImmSel
+        self.ALUSrc = ALUSrc
+        self.ALUCntr = ALUCntr
+        self.BAdd = BAdd
+        self.BrSel = BrSel
+        self.MemSel = MemSel
+        self.MemRd = MemRd
+        self.MemWr = MemWr
+        self.NotSel = NotSel
+        self.WbSel = WbSel
+        self.Call = Call
+        self.Ret = Ret
+
     def update(self, op, cond, sel):
-        pass
-        # 
+        if self.has_cond[op] and (not self.checkCond(self, cond)):
+            self.updateSigs()
+            return
+
+        #NOP
+        if op == 0x00:
+            self.updateSigs()
+
+        #ADD
+        elif op == 0x01:
+            self.updateSigs(RegWr=True)
+
+        #ADDI
+        elif op == 0x02:
+            self.updateSigs(RegWr=True, ALUSrc=1)
+
+        #SUB
+        elif op == 0x03:
+            self.updateSigs(RegWr=True, ALUCntr=1)
+
+        #SUBI
+        elif op == 0x04:
+            self.updateSigs(RegWr=True, ALUCntr=1, ALUSrc=1)
+
+        #MUL
+        elif op == 0x05:
+            self.updateSigs(RegWr=True, ALUCntr=2)
+
+        #MULI
+        elif op == 0x06:
+            self.updateSigs(RegWr=True, ALUCntr=2, ALUSrc=1)
+
+        #DIV
+        elif op == 0x07:
+            self.updateSigs(RegWr=True, ALUCntr=3)
+
+        #DIVI
+        elif op == 0x08:
+            self.updateSigs(RegWr=True, ALUCntr=3, ALUSrc=1)
+
+        #LSL,LSR,ASR
+        elif op == 0x09:
+            if cond == 0:
+                self.updateSigs(RegWr=True, ALUCntr=8, ALUSrc=2)
+            elif cond == 1:
+                self.updateSigs(RegWr=True, ALUCntr=9, ALUSrc=2)
+
+        #TAR
+        elif op == 0x0A:
+            self.updateSigs(RegWr=True, RegDst=1, WbSel=2)
+
+        #MOV
+        elif op == 0x0B:
+            self.updateSigs(RegWr=True, RegDst=1, WbSel=2)
+
+        #CMP
+        elif op == 0x0C:
+            self.updateSigs(ALUCntr=1)
+
+        #AND
+        elif op == 0x0D:
+            self.updateSigs(RegWr=True, ALUCntr=4)
+
+        #ANDI
+        elif op == 0x0E:
+            self.updateSigs(RegWr=True, ALUCntr=4, ALUSrc=1)
+
+        #OR
+        elif op == 0x0F:
+            self.updateSigs(RegWr=True, ALUCntr=5)
+
+        #ORI
+        elif op == 0x10:
+            self.updateSigs(RegWr=True, ALUCntr=5, ALUSrc=1)
+
+        #XOR
+        elif op == 0x11:
+            self.updateSigs(RegWr=True, ALUCntr=6)
+
+        #XORI
+        elif op == 0x12:
+            self.updateSigs(RegWr=True, ALUCntr=6, ALUSrc=1)
+
+        #NOT
+        elif op == 0x13:
+            self.updateSigs(RegWr=True, NotSel=1)
+
+        #BIC
+        elif op == 0x14:
+            self.updateSigs(RegWr=True, ALUCntr=7)
+
+        #LDA
+        elif op == 0x15:
+            self.updateSigs(RegWr=True, ImmSel=1, MemSel=1, MemRd=True, WbSel=0)
+
+        #LDC
+        elif op == 0x16:
+            self.updateSigs(RegWr=True, ImmSel=1, WbSel=3)
+
+        #LDO
+        elif op == 0x017:
+            self.updateSigs(RegWr=True, MemRd=True, WbSel=0)
+
+        #STR
+        elif op == 0x018:
+            self.updateSigs(MemSel=1, ImmSel=1, MemWr=True)
+
+        #STO
+        elif op == 0x19:
+            self.updateSigs(MemWr=True)
+
+        #B
+        elif op == 0x1A:
+             self.updateSigs(BrSel=1)
+
+        #BR
+        elif op == 0x1B:
+            self.updateSigs(BrSel=2)
+
+        #CALL
+        #Does nothing right now
+        elif op == 0x1C:
+            self.updateSigs(Call=True)
+
+        #RET
+        # Does nothing right now
+        elif op == 0x1D:
+            self.updateSigs(Ret=True)
+
+        #PUSH, POP, INC, DEC
+        elif op == 0x1E:
+            if sel == 1:
+                self.updateSigs(Push=True)
+            elif sel == 2:
+                self.updateSigs(Pop=True)
+            elif sel == 4:
+                self.updateSigs(ALUSrc=3, RegWr=True)
+            elif sel == 8:
+                self.updateSigs(ALUSrc=3, RegWr=True, ALUCntr=1)
+
+        #SYSCALL
+        elif op == 0x1F:
+            pass
