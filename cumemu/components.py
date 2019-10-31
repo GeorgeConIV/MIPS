@@ -48,7 +48,7 @@ class Memory:
     def __init__(self):
         self.memspace = [Int16(0) for _ in range(512)]
 
-    def writeWord(self, address, x):
+    def write(self, address, x):
         try:
             if (address % 2) != 0:
                 raise ex.MemoryAccessFault("Address not on word boundary")
@@ -56,7 +56,7 @@ class Memory:
         except IndexError:
             raise ex.MemoryAccessFault("Address outside of memory space")
 
-    def readWord(self, address):
+    def read(self, address):
         try:
             if (address % 2) != 0:
                 raise ex.MemoryAccessFault("Address not on word boundary")

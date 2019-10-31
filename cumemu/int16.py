@@ -8,7 +8,7 @@ class Int16:
         if isinstance(x, Int16):
             self.set(x.actual)
         else:
-            self.actual = x
+            self.actual = max(min(x, 0x7FFF), -0x8000)
             self.val = abs(x) & 0x7FFF
             self.n = True if x < 0 else False
             self.z = True if x == 0 else False
