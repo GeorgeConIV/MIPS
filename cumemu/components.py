@@ -44,7 +44,7 @@ class ALU:
             lambda x, y : x & ~y,   # bic
             lambda x, y : x << y,   # lsl
             lambda x, y : x >> y,   # lsr
-            lambda x, y : x / 2**y.actual, # asr 
+            lambda x, y : Int16(x.actual >> y.actual), # asr 
             lambda x, y : ~x        # not
         ][ctrl](a, b)
     
