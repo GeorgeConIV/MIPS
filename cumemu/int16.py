@@ -9,14 +9,14 @@ class Int16:
             self.set(x.actual)
         else:
             self.actual = max(min(x, 0x7FFF), -0x8000)
-            self.val = abs(x) & 0x7FFF
+            self.val = abs(x) & 0x7FFF if x != -65536 else 65536
             self.n = True if x < 0 else False
             self.z = True if x == 0 else False
             self.c = True if (x & 0x10000) == 0 else False
             self.v = not self.c
 
     def bytes(self):
-        return bytes([self.actual & 0xFF00, self.actual & 0xFF])
+        return bytes([(self.actual & 0xFF00) >> 8, self.actual & 0xFF])
 
     def actualValue(self):
         return self.val * (-1 if self.n else 1)
@@ -27,21 +27,36 @@ class Int16:
     def __sub__(self, y):
         return Int16(self.actual - y.actual)
 
+    def __mul__(self, y):
+        return Int16(self.actual * y.actual)
+
+    def __truediv__(self, y):
+        return Int16(self.actual // y.actual)
+
+    def __and__(self, y):
+        return Int16(self.actual & y.actual)
+
+    def __or__(self, y):
+        return Int16(self.actual | y.actual)
+
+    def __xor__(self, y):
+        return Int16(self.actual ^ y.actual)
+
+    def __lshift__(self, y):
+        return Int16(self.actual << y.actual)
+
+    def __rshift__(self, y):
+        return Int16((self.actual % 0x10000) >> y.actual)
+
+    def __neg__(self):
+        return Int16(-self.actual)
+
+    def __invert__(self):
+        return Int16(-self.actual - 1)
+
     def __str__(self):
-        returnStr = bin(self.val).split('b')[1]
+        hex_s = hex(self.actualValue() & 0xFFFF).split('x')[1].upper()
+        return ''.join(['0x']+['0' for _ in range(max(0, 4 - len(hex_s)))]+[hex_s])
 
-        if len(returnStr) < 16:
-            length = 16 - len(returnStr)
-            for i in range(0, length):
-                returnStr = '0' + returnStr
-
-        elif len(returnStr) > 16:
-            length = len(returnStr) - 16
-            returnStr = returnStr[length:]
-
-        return returnStr
-
-    # please implement other overloaded operators
-    # as well as __str__ (which is python's toString())
-    # __str__ should print out a binary representation...
-    # consider using bin()
+    def __repr__(self):
+        return self.__str__()

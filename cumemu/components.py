@@ -34,16 +34,18 @@ class ALU:
         self.b = b
         self.ctrl = ctrl
         self.out = [
-            lambda x, y : x + y,
-            lambda x, y : x - y,
-            lambda x, y : x * y,
-            lambda x, y : x / y,
-            lambda x, y : x & y,
-            lambda x, y : x | y,
-            lambda x, y : x ^ y,
-            lambda x, y : x & ~y,
-            lambda x, y : x << y,
-            lambda x, y : x >> y
+            lambda x, y : x + y,    # add
+            lambda x, y : x - y,    # sub
+            lambda x, y : x * y,    # mul
+            lambda x, y : x / y,    # div
+            lambda x, y : x & y,    # and
+            lambda x, y : x | y,    # or
+            lambda x, y : x ^ y,    # xor
+            lambda x, y : x & ~y,   # bic
+            lambda x, y : x << y,   # lsl
+            lambda x, y : x >> y,   # lsr
+            lambda x, y : x / 2**y.actual, # asr 
+            lambda x, y : ~x        # not
         ][ctrl](a, b)
     
 class Memory:
@@ -103,50 +105,16 @@ class ControlUnit:
         self.v = v
 
     def checkCond(self, op):
-        if op == 0:
-            return True
-
-        elif op == 1:
-            if self.z == 1:
-                return True
-            else:
-                return False
-
-        elif op == 2:
-            if self.z == 1:
-                return False
-            else:
-                return True
-
-        elif op == 3:
-            if self.n != self.v:
-                return True
-            else:
-                return False
-
-        elif op == 4:
-            if self.z or (self.n != self.v) == False:
-                return True
-            else:
-                return False
-
-        elif op == 5:
-            if self.z or (self.n != self.v):
-                return True
-            else:
-                return False
-
-        elif op == 6:
-            if self.n != self.v == False:
-                return True
-            else:
-                return False
-
-        elif op == 7:
-            if self.z==1:
-                return True
-            else:
-                return False
+        return [
+            lambda: True,                               # NULL
+            lambda: self.z == 1,                        # EQ
+            lambda: self.z != 1,                        # NE
+            lambda: self.n != self.v,                   # LT
+            lambda: not self.z or not self.n != self.v, # GT
+            lambda: self.z or self.n != self.v,         # LTE
+            lambda: not self.n != self.v,               # GTE
+            lambda: self.z == 1                         # EQZ
+        ][op]
 
     def updateSigs(self, RegWr = False, Push = False, Pop = False, RegDst = 0, ImmSel = 0,
                    ALUSrc = 0, ALUCntr = 0, BAdd = 0, BrSel = 0, MemSel = 0, MemRd = False,
@@ -169,7 +137,7 @@ class ControlUnit:
         self.Ret = Ret
 
     def update(self, op, cond, sel):
-        if self.has_cond[op] and (not self.checkCond(self, cond)):
+        if self.has_cond[op] and (not self.checkCond(cond)):
             self.updateSigs()
             return
 
@@ -215,6 +183,8 @@ class ControlUnit:
                 self.updateSigs(RegWr=True, ALUCntr=8, ALUSrc=2)
             elif cond == 1:
                 self.updateSigs(RegWr=True, ALUCntr=9, ALUSrc=2)
+            elif cond == 2:
+                self.updateSigs(RegWr=True, ALUCntr=10, ALUSrc=2)
 
         #TAR
         elif op == 0x0A:
@@ -254,7 +224,7 @@ class ControlUnit:
 
         #NOT
         elif op == 0x13:
-            self.updateSigs(RegWr=True, NotSel=1)
+            self.updateSigs(RegWr=True, WbSel=1, ALUCntr=11)
 
         #BIC
         elif op == 0x14:
@@ -311,4 +281,5 @@ class ControlUnit:
 
         #SYSCALL
         elif op == 0x1F:
-            pass
+            self.updateSigs()
+            raise ex.SyscallInterrupt

@@ -53,7 +53,6 @@ class Processor:
 
         if self.ctrl.RegWr:
             writeback = [mem_out, alu_out, rt_out, imm][self.ctrl.WbSel]
-            writeback = [writeback, self.alu.not_out][self.ctrl.NotSel]
             reg_dst = [15, self.decoder.rs][self.ctrl.RegDst]
             self.reg_file.write(reg_dst, writeback)
         
