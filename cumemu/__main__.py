@@ -1,17 +1,19 @@
 import wx
 import os
-import cumemu.processor as proc
+
+from cumemu.emulator import Emulator
 
 class frame(wx.Frame):
 
     def __init__(self, parent, title):
-        super(frame, self).__init__(parent, title=title, size=(1000, 1000))
-        self.process = proc.Processor()
-        self.UpdateRegs()
+        super(frame, self).__init__(parent, title=title, size=(500, 500))
+        self.process = Emulator()
+        self.strings = ["REGISTERS:", "R0 :", "R1 :", "R2 :", "R3 :", "R4 :", "R5 :", "R6 :", "R7 :", "R8 :", "R9 :", "R10:", "R11:",
+                         "PC :", "RA :", "SP :", "AR :"]
         self.InitUI()
 
     def UpdateRegs(self):
-        self.regs = self.process.reg_file.registers
+        self.regs = self.process.processor.reg_file.registers
         self.regnames = ["R0 :", "R1 :", "R2 :", "R3 :", "R4 :", "R5 :", "R6 :", "R7 :", "R8 :", "R9 :", "R10:", "R11:",
                          "PC :", "RA :", "SP :", "AR :"]
         self.strings = ["REGISTERS:"]
@@ -47,7 +49,7 @@ class frame(wx.Frame):
         self.Bind(wx.EVT_TOOL, self.OnStep, runtool)
         self.Bind(wx.EVT_TOOL, self.onOpen, opentool)
 
-        self.SetSize((1000, 1000))
+        self.SetSize((500, 500))
         self.SetTitle('MIPS GUI thing')
         self.Centre()
 
@@ -60,7 +62,7 @@ class frame(wx.Frame):
         print("Step once")
 
     def onOpen(self, event):
-        wildcard = "TXT files (*.txt)|*.txt"
+        wildcard = "Executables (*.cum)|*.cum"
         dialog = wx.FileDialog(self, "Open Text Files", wildcard=wildcard,
                                style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
@@ -70,9 +72,11 @@ class frame(wx.Frame):
         path = dialog.GetPath()
 
         if os.path.exists(path):
-            with open(path) as fobj:
-                for line in fobj:
-                    self.my_text.WriteText(line)
+            self.process.setup(path)
+            print("success")
+        else:
+            print("failed")
+        self.UpdateRegs()
 
 def main():
     app = wx.App()
