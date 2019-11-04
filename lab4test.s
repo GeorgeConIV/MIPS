@@ -8,47 +8,46 @@
 
 ;   init
         ldc     64      ; $v0 = 0x40
-        tar     r0
+        mov     r0, ar 
         ldc     514     ; $v1 = 0x1010
         lsl     ar, 3
-        tar     r1
+        mov     r1, ar
         ldc     15      ; $v2 = 0xF
-        tar     r2
+        mov     r2, ar
         lsl     ar, 4   ; $v3 = 0xF0
-        tar     r3
+        mov     r3, ar
         ldc     256     ; used for if cond cmp
-        tar     r4
+        mov     r4, ar
         lda     array   ; $a0
-        tar     r5
-        ldc     5   ; $a1 = 0x5
-        tar     r6
+        mov     r5, ar
+        li      r6, 5   ; $a1 = 0x5
         ldc     255
-        tar     r7
+        mov     r7, ar
         lsl     ar, 8
-        tar     r8
+        mov     r8, ar
 
 ;   main
-loop:   cmp     r6, rz
+loop:   cmp     r6, zr
         b.lte   end
         dec     r6
-        ldo     r5, rz
+        ldo     r5, zr
         cmp     ar, r4
         b.lte   else
 
         asr     r0, 3
-        tar     r0
+        mov     r0, ar
         or      r1, r0
-        tar     r1
+        mov     r1, ar
         mov     ar, r8
-        sto     r5, rz
+        sto     r5, zr
         b       l_end
 
 else:   lsl     r2, 2
-        tar     r2
+        mov     r2, ar
         xor     r3, r2
-        tar     r3
-        mov     ar, r7
-        sto     r5, rz
+        mov     r3, ar
+        mov     ar, r8
+        sto     r5, zr
 
 l_end:  inc     r5
         inc     r5

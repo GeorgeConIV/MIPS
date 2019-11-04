@@ -14,7 +14,7 @@ class Instruction:
         "lsl"   :   0x09,
         "lsr"   :   0x09,
         "asr"   :   0x09,
-        "tar"   :   0x0A,
+        "li"    :   0x0A,
         "mov"   :   0x0B,
         "cmp"   :   0x0C,
         "and"   :   0x0D,
@@ -63,7 +63,7 @@ class Instruction:
         "r9"    :   0x9,
         "r10"   :   0xA,
         "r11"   :   0xB,
-        "rz"    :   0xB,
+        "zr"    :   0xB,
         "pc"    :   0xC,
         "r12"   :   0xC,
         "ra"    :   0xD,
@@ -99,7 +99,7 @@ class Instruction:
     def relative(self, label):
         try:
             address = label_map[label]
-            return (address - self.pc + 2) >> 1
+            return (address - self.pc - 2) >> 1
         except:
             ErrorPrint(self.ln, self.line, "Error: Label was not defined")
             exit()

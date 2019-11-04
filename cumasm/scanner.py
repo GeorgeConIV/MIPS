@@ -138,8 +138,8 @@ def CreateBType(pc, line, line_num):
     )
 
 instr_switch = {
-    **dict.fromkeys(["add","sub","mul","div","tar","mov","cmp","and","or","xor","bic","ldo","sto"], CreateRType),
-    **dict.fromkeys(["addi","subi","muli","divi","andi","ori","xori"], CreateIType),
+    **dict.fromkeys(["add","sub","mul","div","mov","cmp","and","or","xor","bic","ldo","sto"], CreateRType),
+    **dict.fromkeys(["addi","subi","muli","divi","andi","ori","xori","li"], CreateIType),
     **dict.fromkeys(["lda","str","call"], CreateJType),
     **dict.fromkeys(["lsl","lsr","asr"], CreateSType),
     **dict.fromkeys(["not","br","push","pop","inc","dec"], CreateNType),
@@ -162,6 +162,7 @@ def InstructionGen(filename):
     with open(filename, "r") as f:
         for line in f:
             try:
+                line_num += 1
                 line = line.split(';')[0]   # remove comment
                 if line == "":              # if just a comment, go to next line
                     continue
@@ -172,7 +173,6 @@ def InstructionGen(filename):
                 m = re.match(instr, line)   # find instr
                 if m is not None:
                     yield instr_switch[m.group(1).lower()](pc, line, line_num) # function table that returns an instruction object
-                line_num += 1
                 pc += 2
             except AssemblerError as ae:
                 ErrorPrint(line_num, line, ae.msg)

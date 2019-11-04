@@ -4,8 +4,8 @@ from cumemu.int16 import Int16
 
 class InstructionDecoder:
     def bitToInt16(self, x, bit_len):
-        if (x & (1 << bit_len)) != 0:
-            x = -((1 << (bit_len+1)) - x)
+        if (x & (1 << (bit_len - 1))) != 0:
+            x = -((1 << bit_len) - x)
         return Int16(x)
 
     def decode(self, hi, lo):
@@ -14,19 +14,23 @@ class InstructionDecoder:
         self.rt = (lo & 0x78) >> 3
         self.cond = lo & 0x7
 
+        self.rt_imm = Int16(self.rt)
         self.imm = self.bitToInt16(lo & 0x7F, 7)
         self.l_imm = self.bitToInt16((hi & 0x7) << 8 | lo, 11)
         self.b_address = self.bitToInt16((hi & 0x7) << 5 | (lo & 0xF8) >> 3, 8)
 
 class RegisterFile:
     def __init__(self):
-        self.registers = [Int16(0) for _ in range(15)]
+        self.registers = [Int16(0) for _ in range(16)]
 
     def write(self, reg, x):
         self.registers[reg].set(x)
 
     def read(self, reg):
         return self.registers[reg]
+
+    def __str__(self):
+        return '\n'.join(["Registers: {"]+[f"\tR{i}: " + str(reg) for i, reg in enumerate(self.registers)]+["}"])
 
 class ALU:
     def update(self, a, b, ctrl):
@@ -71,7 +75,7 @@ class Memory:
 class ControlUnit:
     # lookup tables for the various opcodes
     has_cond = [False, True, False, True, False, True, False, True,
-        False, False, True, True, True, True, False, True, False,
+        False, False, False, True, True, True, False, True, False,
         True, False, True, True, False, False, True, False, True,
         True, True, False, False, True, False]
 
@@ -103,6 +107,7 @@ class ControlUnit:
         self.n = n
         self.c = c
         self.v = v
+        print(f"z = {z}, n = {n}, c = {c}, v = {v}")
 
     def checkCond(self, op):
         return [
@@ -114,7 +119,7 @@ class ControlUnit:
             lambda: self.z or self.n != self.v,         # LTE
             lambda: not self.n != self.v,               # GTE
             lambda: self.z == 1                         # EQZ
-        ][op]
+        ][op]()
 
     def updateSigs(self, RegWr = False, Push = False, Pop = False, RegDst = 0, ImmSel = 0,
                    ALUSrc = 0, ALUCntr = 0, BAdd = 0, BrSel = 0, MemSel = 0, MemRd = False,
@@ -138,6 +143,7 @@ class ControlUnit:
 
     def update(self, op, cond, sel):
         if self.has_cond[op] and (not self.checkCond(cond)):
+            print("cond works!")
             self.updateSigs()
             return
 
@@ -186,9 +192,9 @@ class ControlUnit:
             elif cond == 2:
                 self.updateSigs(RegWr=True, ALUCntr=10, ALUSrc=2)
 
-        #TAR
+        #LI
         elif op == 0x0A:
-            self.updateSigs(RegWr=True, RegDst=1, WbSel=2)
+            self.updateSigs(RegWr=True, RegDst=1, WbSel=3)
 
         #MOV
         elif op == 0x0B:
@@ -232,7 +238,7 @@ class ControlUnit:
 
         #LDA
         elif op == 0x15:
-            self.updateSigs(RegWr=True, ImmSel=1, MemSel=1, MemRd=True, WbSel=0)
+            self.updateSigs(RegWr=True, ImmSel=1, WbSel=3)
 
         #LDC
         elif op == 0x16:
@@ -275,9 +281,9 @@ class ControlUnit:
             elif sel == 2:
                 self.updateSigs(Pop=True)
             elif sel == 4:
-                self.updateSigs(ALUSrc=3, RegWr=True)
+                self.updateSigs(ALUSrc=3, RegWr=True, RegDst=1)
             elif sel == 8:
-                self.updateSigs(ALUSrc=3, RegWr=True, ALUCntr=1)
+                self.updateSigs(ALUSrc=3, RegWr=True, ALUCntr=1, RegDst=1)
 
         #SYSCALL
         elif op == 0x1F:

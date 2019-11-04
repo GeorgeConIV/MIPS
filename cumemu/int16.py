@@ -8,12 +8,12 @@ class Int16:
         if isinstance(x, Int16):
             self.set(x.actual)
         else:
-            self.actual = max(min(x, 0x7FFF), -0x8000)
-            self.val = abs(x) & 0x7FFF if x != -65536 else 65536
-            self.n = True if x < 0 else False
+            self.n = True if x & 0x8000 else False
+            self.val = (-x if self.n else x) & 0x7FFF
             self.z = True if x == 0 else False
             self.c = True if (x & 0x10000) == 0 else False
-            self.v = not self.c
+            self.v = True if x > 32767 else True if x < -32768 else False
+            self.actual = self.actualValue()
 
     def bytes(self):
         return bytes([(self.actual & 0xFF00) >> 8, self.actual & 0xFF])
