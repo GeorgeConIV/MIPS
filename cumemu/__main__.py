@@ -73,7 +73,8 @@ class frame(wx.Frame):
         self.process.run()
         self.UpdateRegs()
         self.lst.Set(self.strings)
-        self.my_text.SetLabel("Current opcode: " + self.opstr)
+        self.my_text.SetLabel("Current opcode: " + self.opstr
+                              + "              Current instr: " + self.currentop.__str__())
         print("Step once")
 
     def onOpen(self, event):
