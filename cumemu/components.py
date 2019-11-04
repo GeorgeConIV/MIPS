@@ -20,7 +20,7 @@ class InstructionDecoder:
 
 class RegisterFile:
     def __init__(self):
-        self.registers = [Int16(0) for _ in range(15)]
+        self.registers = [Int16(0) for _ in range(16)]
 
     def write(self, reg, x):
         self.registers[reg].set(x)

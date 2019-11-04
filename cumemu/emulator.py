@@ -3,10 +3,11 @@ import cumemu.exceptions as ex
 from cumemu.processor import Processor
 
 class Emulator:
-    def setup(self, filename):
+    def __init__(self):
         self.processor = Processor()
         self.mem = self.processor.mem
 
+    def setup(self, filename):
         with open(filename, "rb") as f:
             bitstr = f.read()
             instr_gen = ((bitstr[i] << 8) | bitstr[i+1] for i in range(0, len(bitstr), 2))

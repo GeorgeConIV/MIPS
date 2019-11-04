@@ -30,8 +30,8 @@ class Processor:
 
     def run(self):
         pc = self.reg_file.read(12).actual
-        instr = self.mem.read(pc).bytes()
-        self.decoder.decode(instr[0], instr[1])
+        self.instr = self.mem.read(pc).bytes()
+        self.decoder.decode(self.instr[0], self.instr[1])
         self.ctrl.update(self.decoder.op, self.decoder.cond, self.decoder.rt)
 
         rs_out = self.reg_file.read(self.decoder.rs)

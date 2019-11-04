@@ -1,7 +1,9 @@
 import wx
 import os
 
+from cumasm.instruction import Instruction
 from cumemu.emulator import Emulator
+from cumemu.int16 import Int16
 
 class frame(wx.Frame):
 
@@ -11,6 +13,8 @@ class frame(wx.Frame):
         self.strings = ["REGISTERS:", "R0 :", "R1 :", "R2 :", "R3 :", "R4 :", "R5 :", "R6 :", "R7 :", "R8 :", "R9 :", "R10:", "R11:",
                          "PC :", "RA :", "SP :", "AR :"]
         self.InitUI()
+        self.currentop = 0
+        self.opstr = ""
 
     def UpdateRegs(self):
         self.regs = self.process.processor.reg_file.registers
@@ -21,6 +25,15 @@ class frame(wx.Frame):
             string = self.regnames[x] + self.regs[x].__str__()
             #print(string)
             self.strings.append(string)
+
+        value = (self.process.processor.instr[0] & 0xF8) >> 3
+        key_list = list(Instruction.opcode_table.keys())
+        val_list = list(Instruction.opcode_table.values())
+        self.opstr = key_list[val_list.index(value)]
+
+        self.currentop = Int16(int.from_bytes(self.process.processor.instr, "big"))
+        #print(self.currentop.__str__())
+        # print(key_list[val_list.index(value)])
 
     def InitUI(self):
         toolbar = self.CreateToolBar()
@@ -34,9 +47,9 @@ class frame(wx.Frame):
         otherbox = wx.BoxSizer(wx.VERTICAL)
 
         self.my_text = wx.TextCtrl(self, style=wx.TE_MULTILINE, size=(200, 900))
-        lst = wx.ListBox(panel, size = (80, 900), choices = self.strings, style = wx.LB_SINGLE)
+        self.lst = wx.ListBox(panel, size = (80, 900), choices = self.strings, style = wx.LB_SINGLE)
 
-        box.Add(lst, 0, wx.EXPAND)
+        box.Add(self.lst, 0, wx.EXPAND)
 
         otherbox.Add(self.my_text, 1, wx.ALL|wx.EXPAND)
 
@@ -59,6 +72,8 @@ class frame(wx.Frame):
     def OnStep(self, e):
         self.process.run()
         self.UpdateRegs()
+        self.lst.Set(self.strings)
+        self.my_text.SetLabel("Current opcode: " + self.opstr)
         print("Step once")
 
     def onOpen(self, event):
@@ -76,7 +91,7 @@ class frame(wx.Frame):
             print("success")
         else:
             print("failed")
-        self.UpdateRegs()
+        #self.UpdateRegs()
 
 def main():
     app = wx.App()
