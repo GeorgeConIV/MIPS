@@ -5,6 +5,44 @@ from cumasm.instruction import Instruction
 from cumemu.emulator import Emulator
 from cumemu.int16 import Int16
 
+class MemWindow(wx.Frame):
+    def __init__(self, title, em, parent=None):
+        super(MemWindow, self).__init__(parent, title=title, size=(500, 500))
+        self.parent = parent
+
+        self.address_list = [Int16(0) for _ in range(512)]
+        self.mem_list = [Int16(0) for _ in range(513)]
+        self.mem_list[0] = 'ADDRESSS   VALUES'
+
+        self.em = em
+
+        for x in range(len(self.em.processor.mem.memspace)):
+            self.mem_list[x+1] = Int16(x).__str__() + ':  ' + Int16(self.em.processor.mem.memspace[x]).__str__()
+
+        self.initUI()
+        self.Show()
+
+    def updateMem(self):
+        for x in range(len(self.em.processor.mem.memspace)):
+            self.mem_list[x+1] = Int16(x).__str__() + ':  ' + Int16(self.em.processor.mem.memspace[x]).__str__()
+        self.lst.Set(self.mem_list)
+
+    def initUI(self):
+        panel = wx.Panel(self)
+        box = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.lst = wx.ListBox(panel, size=(300, 900), choices=self.mem_list, style=wx.LB_SINGLE)
+
+        box.Add(self.lst, 0, wx.EXPAND)
+
+        panel.SetSizer(box)
+        panel.Fit()
+
+        self.SetSize((500, 500))
+        self.SetTitle('MIPS GUI thing')
+        self.Centre()
+
+
 class frame(wx.Frame):
 
     def __init__(self, parent, title):
@@ -15,6 +53,7 @@ class frame(wx.Frame):
         self.InitUI()
         self.currentop = 0
         self.opstr = ""
+        self.newFrame = None
 
     def UpdateRegs(self):
         self.regs = self.process.processor.reg_file.registers
@@ -40,6 +79,7 @@ class frame(wx.Frame):
         runtool = toolbar.AddTool(wx.ID_ANY, 'Step forward', wx.Bitmap('step.png'))
         qtool = toolbar.AddTool(wx.ID_ANY, 'Quit', wx.Bitmap('exit.png'))
         opentool = toolbar.AddTool(wx.ID_ANY, 'Open file', wx.Bitmap('open.png'))
+        memtool = toolbar.AddTool(wx.ID_ANY, 'mem viewer', wx.Bitmap('mem.png'))
         toolbar.Realize()
 
         panel = wx.Panel(self)
@@ -61,10 +101,14 @@ class frame(wx.Frame):
         self.Bind(wx.EVT_TOOL, self.OnQuit, qtool)
         self.Bind(wx.EVT_TOOL, self.OnStep, runtool)
         self.Bind(wx.EVT_TOOL, self.onOpen, opentool)
+        self.Bind(wx.EVT_TOOL, self.onMem, memtool)
 
         self.SetSize((500, 500))
         self.SetTitle('MIPS GUI thing')
         self.Centre()
+
+    def onMem(self, e):
+        self.newFrame = MemWindow('mem win', self.process)
 
     def OnQuit(self, e):
         self.Close()
@@ -76,6 +120,8 @@ class frame(wx.Frame):
         self.my_text.SetLabel("Current opcode: " + self.opstr
                               + "              Current instr: " + self.currentop.__str__())
         print("Step once")
+        if(self.newFrame != None):
+            self.newFrame.updateMem()
 
     def onOpen(self, event):
         wildcard = "Executables (*.cum)|*.cum"
