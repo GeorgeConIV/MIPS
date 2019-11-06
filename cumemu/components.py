@@ -288,4 +288,4 @@ class ControlUnit:
         #SYSCALL
         elif op == 0x1F:
             self.updateSigs()
-            raise ex.SyscallInterrupt
+            #raise ex.SyscallInterrupt

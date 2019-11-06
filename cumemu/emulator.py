@@ -13,6 +13,7 @@ class Emulator:
             print(len(bitstr))
             instr_gen = ((bitstr[i] << 8) | bitstr[i+1] for i in range(0, len(bitstr), 2))
             for i, instr in enumerate(instr_gen):
+                print(instr)
                 self.mem.write(i<<1, instr)
 
     def run(self):

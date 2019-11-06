@@ -17,6 +17,7 @@ op_names = ["nop", "add", "addi", "sub", "subi", "mul", "muli", "div",
 if __name__ == "__main__":
     while True:
         instr = emu.run()
-        print("Instruction: " + str(instr) + " " + op_names[(instr.bytes()[0] & 0xF8) >> 3])
+        if instr is not None:
+            print("Instruction: " + str(instr) + " " + op_names[(instr.bytes()[0] & 0xF8) >> 3])
         print(emu.regs)
         input("Press any key to continue...")

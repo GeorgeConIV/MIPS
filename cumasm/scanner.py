@@ -164,7 +164,7 @@ def InstructionGen(filename):
             try:
                 line_num += 1
                 line = line.split(';')[0]   # remove comment
-                if line == "":              # if just a comment, go to next line
+                if line == "" or not any(c.isalpha() for c in line):   # if empty, go to next line
                     continue
                 m = re.match(label, line)   # check if there's a label  
                 if m is not None:

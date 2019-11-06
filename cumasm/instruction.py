@@ -1,4 +1,5 @@
 from cumasm.globals import label_map, ErrorPrint
+from cumasm.int16 import Int16
 
 class Instruction:
     opcode_table = {
@@ -85,7 +86,7 @@ class Instruction:
         "asr"   :   2
     }
     def __init__(self, line, line_num, typ, pc, opcode=None, rs=None, rt=None, imm=None, label=None, cond=None):
-        self.line = line
+        self.line = line.split('\n')[0].strip()
         self.ln = line_num
         self.type = typ
         self.pc = pc
@@ -219,5 +220,7 @@ class Instruction:
         return self.bit_jump_table[self.type](self)
     
     def debug(self):
-        print(f"{self.ln}: {self.line}")
-        print([bin(i) for i in self.binary()])
+        print(f"Line {self.ln}: {self.line}")
+        print(f"PC: {hex(self.pc)}")
+        bin = self.binary()
+        print("Instruction: " + str(Int16(bin[0]<<8 | bin[1])) + "\n")

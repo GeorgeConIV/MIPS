@@ -46,7 +46,7 @@ else:   lsl     r2, 2
         mov     r2, ar
         xor     r3, r2
         mov     r3, ar
-        mov     ar, r8
+        mov     ar, r7
         sto     r5, zr
 
 l_end:  inc     r5
@@ -54,7 +54,7 @@ l_end:  inc     r5
         b       loop
 
 end:    ldc     0   ; return
-        syscall
+
 
 array:  dw      257     ; 0x101
         dw      272     ; 0x110
