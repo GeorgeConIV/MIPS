@@ -1,5 +1,4 @@
-import wx
-import os
+import argparse
 
 from cumasm.instruction import Instruction
 from cumemu.emulator import Emulator

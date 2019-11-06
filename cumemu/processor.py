@@ -38,7 +38,7 @@ class Processor:
         rt_out = self.reg_file.read(self.decoder.rt)
         imm = [self.decoder.imm, self.decoder.l_imm][self.ctrl.ImmSel]
 
-        alu_b = [rt_out, imm, self.decoder.rt, Int16(1)][self.ctrl.ALUSrc]
+        alu_b = [rt_out, imm, self.decoder.rt_imm, Int16(1)][self.ctrl.ALUSrc]
         self.alu.update(rs_out, alu_b, self.ctrl.ALUCntr)
         alu_out = self.alu.out
         self.ctrl.updateFlags(alu_out.z, alu_out.n, alu_out.c, alu_out.v)
@@ -67,7 +67,7 @@ class Processor:
             return
 
         pc = Int16(pc + 2)
-        b_addr = [self.decoder.l_imm, self.decoder.b_address][self.ctrl.BAdd] * Int16(2)
+        b_addr = [self.decoder.b_address, self.decoder.l_imm][self.ctrl.BAdd] * Int16(2)
         next_pc = [pc, pc + b_addr, rs_out][self.ctrl.BrSel]
         self.reg_file.write(12, next_pc)
 

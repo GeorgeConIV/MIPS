@@ -1,4 +1,5 @@
 from cumasm.globals import label_map, ErrorPrint
+from cumasm.int16 import Int16
 
 class Instruction:
     opcode_table = {
@@ -14,7 +15,7 @@ class Instruction:
         "lsl"   :   0x09,
         "lsr"   :   0x09,
         "asr"   :   0x09,
-        "tar"   :   0x0A,
+        "li"    :   0x0A,
         "mov"   :   0x0B,
         "cmp"   :   0x0C,
         "and"   :   0x0D,
@@ -63,7 +64,7 @@ class Instruction:
         "r9"    :   0x9,
         "r10"   :   0xA,
         "r11"   :   0xB,
-        "rz"    :   0xB,
+        "zr"    :   0xB,
         "pc"    :   0xC,
         "r12"   :   0xC,
         "ra"    :   0xD,
@@ -85,7 +86,7 @@ class Instruction:
         "asr"   :   2
     }
     def __init__(self, line, line_num, typ, pc, opcode=None, rs=None, rt=None, imm=None, label=None, cond=None):
-        self.line = line
+        self.line = line.split('\n')[0].strip()
         self.ln = line_num
         self.type = typ
         self.pc = pc
@@ -99,7 +100,7 @@ class Instruction:
     def relative(self, label):
         try:
             address = label_map[label]
-            return (address - self.pc + 2) >> 1
+            return (address - self.pc - 2) >> 1
         except:
             ErrorPrint(self.ln, self.line, "Error: Label was not defined")
             exit()
@@ -219,5 +220,7 @@ class Instruction:
         return self.bit_jump_table[self.type](self)
     
     def debug(self):
-        print(f"{self.ln}: {self.line}")
-        print([bin(i) for i in self.binary()])
+        print(f"Line {self.ln}: {self.line}")
+        print(f"PC: {hex(self.pc)}")
+        bin = self.binary()
+        print("Instruction: " + str(Int16(bin[0]<<8 | bin[1])) + "\n")
