@@ -12,19 +12,19 @@ class MemWindow(wx.Frame):
 
         self.address_list = [Int16(0) for _ in range(512)]
         self.mem_list = [Int16(0) for _ in range(513)]
-        self.mem_list[0] = 'ADDRESSS   VALUES'
+        self.mem_list[0] = 'ADDRESS    VALUES'
 
         self.em = em
 
         for x in range(len(self.em.processor.mem.memspace)):
-            self.mem_list[x+1] = Int16(x).__str__() + ':  ' + Int16(self.em.processor.mem.memspace[x]).__str__()
+            self.mem_list[x+1] = str(Int16(x)) + ':  ' + str(Int16(self.em.processor.mem.memspace[x]))
 
         self.initUI()
         self.Show()
 
     def updateMem(self):
         for x in range(len(self.em.processor.mem.memspace)):
-            self.mem_list[x+1] = Int16(x).__str__() + ':  ' + Int16(self.em.processor.mem.memspace[x]).__str__()
+            self.mem_list[x+1] = str(Int16(x)) + ':  ' + str(Int16(self.em.processor.mem.memspace[x]))
         self.lst.Set(self.mem_list)
 
     def initUI(self):
@@ -61,7 +61,7 @@ class frame(wx.Frame):
                          "PC :", "RA :", "SP :", "AR :"]
         self.strings = ["REGISTERS:"]
         for x in range(len(self.regs)):
-            string = self.regnames[x] + self.regs[x].__str__()
+            string = self.regnames[x] + str(self.regs[x])
             #print(string)
             self.strings.append(string)
 
