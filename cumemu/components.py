@@ -174,7 +174,7 @@ class ControlUnit:
             lambda: self.updateSigs(MemWr=True),                        # STO
             lambda: self.updateSigs(BrSel=1),                           # B
             lambda: self.updateSigs(BrSel=2),                           # BR
-            lambda: self.updateSigs(Call=True),                         # CALL
+            lambda: self.updateSigs(Call=True, BrSel=1),                # CALL
             lambda: self.updateSigs(Ret=True),                          # RET
             lambda: None,                                               # single-op
             lambda: self.updateSigs()                                   # SYSCALL
