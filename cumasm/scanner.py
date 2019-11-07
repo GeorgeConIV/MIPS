@@ -173,7 +173,7 @@ def InstructionGen(filename):
                 m = re.match(instr, line)   # find instr
                 if m is not None:
                     yield instr_switch[m.group(1).lower()](pc, line, line_num) # function table that returns an instruction object
-                pc += 2
+                    pc += 2
             except AssemblerError as ae:
                 ErrorPrint(line_num, line, ae.msg)
                 exit()
