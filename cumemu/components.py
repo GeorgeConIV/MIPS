@@ -107,7 +107,6 @@ class ControlUnit:
         self.n = n
         self.c = c
         self.v = v
-        print(f"z = {z}, n = {n}, c = {c}, v = {v}")
 
     def checkCond(self, op):
         return [
@@ -143,136 +142,52 @@ class ControlUnit:
 
     def update(self, op, cond, sel):
         if self.has_cond[op] and (not self.checkCond(cond)):
-            print("cond works!")
             self.updateSigs()
             return
 
-        #NOP
-        if op == 0x00:
-            self.updateSigs()
-
-        #ADD
-        elif op == 0x01:
-            self.updateSigs(RegWr=True)
-
-        #ADDI
-        elif op == 0x02:
-            self.updateSigs(RegWr=True, ALUSrc=1)
-
-        #SUB
-        elif op == 0x03:
-            self.updateSigs(RegWr=True, ALUCntr=1)
-
-        #SUBI
-        elif op == 0x04:
-            self.updateSigs(RegWr=True, ALUCntr=1, ALUSrc=1)
-
-        #MUL
-        elif op == 0x05:
-            self.updateSigs(RegWr=True, ALUCntr=2)
-
-        #MULI
-        elif op == 0x06:
-            self.updateSigs(RegWr=True, ALUCntr=2, ALUSrc=1)
-
-        #DIV
-        elif op == 0x07:
-            self.updateSigs(RegWr=True, ALUCntr=3)
-
-        #DIVI
-        elif op == 0x08:
-            self.updateSigs(RegWr=True, ALUCntr=3, ALUSrc=1)
+        [
+            lambda: self.updateSigs(),                                  # NOP
+            lambda: self.updateSigs(RegWr=True),                        # ADD
+            lambda: self.updateSigs(RegWr=True, ALUSrc=1),              # ADDI
+            lambda: self.updateSigs(RegWr=True, ALUCntr=1),             # SUB
+            lambda: self.updateSigs(RegWr=True, ALUCntr=1, ALUSrc=1),   # SUBI
+            lambda: self.updateSigs(RegWr=True, ALUCntr=2),             # MUL
+            lambda: self.updateSigs(RegWr=True, ALUCntr=2, ALUSrc=1),   # MULI
+            lambda: self.updateSigs(RegWr=True, ALUCntr=3),             # DIV
+            lambda: self.updateSigs(RegWr=True, ALUCntr=3, ALUSrc=1),   # DIVI
+            lambda: None,                                               # shifts
+            lambda: self.updateSigs(RegWr=True, RegDst=1, WbSel=3),     # LI
+            lambda: self.updateSigs(RegWr=True, RegDst=1, WbSel=2),     # MOV
+            lambda: self.updateSigs(ALUCntr=1),                         # CMP
+            lambda: self.updateSigs(RegWr=True, ALUCntr=4),             # AND
+            lambda: self.updateSigs(RegWr=True, ALUCntr=4, ALUSrc=1),   # ANDI
+            lambda: self.updateSigs(RegWr=True, ALUCntr=5),             # OR
+            lambda: self.updateSigs(RegWr=True, ALUCntr=5, ALUSrc=1),   # ORI
+            lambda: self.updateSigs(RegWr=True, ALUCntr=6),             # XOR
+            lambda: self.updateSigs(RegWr=True, ALUCntr=6, ALUSrc=1),   # XORI
+            lambda: self.updateSigs(RegWr=True, WbSel=1, ALUCntr=11),   # NOT
+            lambda: self.updateSigs(RegWr=True, ALUCntr=7),             # BIC
+            lambda: self.updateSigs(RegWr=True, ImmSel=1, WbSel=3),     # LDA
+            lambda: self.updateSigs(RegWr=True, ImmSel=1, WbSel=3),     # LDC
+            lambda: self.updateSigs(RegWr=True, MemRd=True, WbSel=0),   # LDO
+            lambda: self.updateSigs(MemSel=1, ImmSel=1, MemWr=True),    # STR
+            lambda: self.updateSigs(MemWr=True),                        # STO
+            lambda: self.updateSigs(BrSel=1),                           # B
+            lambda: self.updateSigs(BrSel=2),                           # BR
+            lambda: self.updateSigs(Call=True),                         # CALL
+            lambda: self.updateSigs(Ret=True),                          # RET
+            lambda: None,                                               # single-op
+            lambda: self.updateSigs()                                   # SYSCALL
+        ][op]()
 
         #LSL,LSR,ASR
-        elif op == 0x09:
+        if op == 0x09:
             if cond == 0:
                 self.updateSigs(RegWr=True, ALUCntr=8, ALUSrc=2)
             elif cond == 1:
                 self.updateSigs(RegWr=True, ALUCntr=9, ALUSrc=2)
             elif cond == 2:
                 self.updateSigs(RegWr=True, ALUCntr=10, ALUSrc=2)
-
-        #LI
-        elif op == 0x0A:
-            self.updateSigs(RegWr=True, RegDst=1, WbSel=3)
-
-        #MOV
-        elif op == 0x0B:
-            self.updateSigs(RegWr=True, RegDst=1, WbSel=2)
-
-        #CMP
-        elif op == 0x0C:
-            self.updateSigs(ALUCntr=1)
-
-        #AND
-        elif op == 0x0D:
-            self.updateSigs(RegWr=True, ALUCntr=4)
-
-        #ANDI
-        elif op == 0x0E:
-            self.updateSigs(RegWr=True, ALUCntr=4, ALUSrc=1)
-
-        #OR
-        elif op == 0x0F:
-            self.updateSigs(RegWr=True, ALUCntr=5)
-
-        #ORI
-        elif op == 0x10:
-            self.updateSigs(RegWr=True, ALUCntr=5, ALUSrc=1)
-
-        #XOR
-        elif op == 0x11:
-            self.updateSigs(RegWr=True, ALUCntr=6)
-
-        #XORI
-        elif op == 0x12:
-            self.updateSigs(RegWr=True, ALUCntr=6, ALUSrc=1)
-
-        #NOT
-        elif op == 0x13:
-            self.updateSigs(RegWr=True, WbSel=1, ALUCntr=11)
-
-        #BIC
-        elif op == 0x14:
-            self.updateSigs(RegWr=True, ALUCntr=7)
-
-        #LDA
-        elif op == 0x15:
-            self.updateSigs(RegWr=True, ImmSel=1, WbSel=3)
-
-        #LDC
-        elif op == 0x16:
-            self.updateSigs(RegWr=True, ImmSel=1, WbSel=3)
-
-        #LDO
-        elif op == 0x017:
-            self.updateSigs(RegWr=True, MemRd=True, WbSel=0)
-
-        #STR
-        elif op == 0x018:
-            self.updateSigs(MemSel=1, ImmSel=1, MemWr=True)
-
-        #STO
-        elif op == 0x19:
-            self.updateSigs(MemWr=True)
-
-        #B
-        elif op == 0x1A:
-             self.updateSigs(BrSel=1)
-
-        #BR
-        elif op == 0x1B:
-            self.updateSigs(BrSel=2)
-
-        #CALL
-        #Does nothing right now
-        elif op == 0x1C:
-            self.updateSigs(Call=True)
-
-        #RET
-        # Does nothing right now
-        elif op == 0x1D:
-            self.updateSigs(Ret=True)
 
         #PUSH, POP, INC, DEC
         elif op == 0x1E:
@@ -287,5 +202,4 @@ class ControlUnit:
 
         #SYSCALL
         elif op == 0x1F:
-            self.updateSigs()
-            #raise ex.SyscallInterrupt
+            raise ex.SyscallInterrupt

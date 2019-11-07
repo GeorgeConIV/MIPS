@@ -1,4 +1,5 @@
-import argparse
+import wx
+import os
 
 from cumasm.instruction import Instruction
 from cumemu.emulator import Emulator
@@ -11,19 +12,19 @@ class MemWindow(wx.Frame):
 
         self.address_list = [Int16(0) for _ in range(512)]
         self.mem_list = [Int16(0) for _ in range(513)]
-        self.mem_list[0] = 'ADDRESSS   VALUES'
+        self.mem_list[0] = 'ADDRESS    VALUES'
 
         self.em = em
 
         for x in range(len(self.em.processor.mem.memspace)):
-            self.mem_list[x+1] = Int16(x).__str__() + ':  ' + Int16(self.em.processor.mem.memspace[x]).__str__()
+            self.mem_list[x+1] = str(Int16(2*x)) + ':  ' + str(Int16(self.em.processor.mem.memspace[x]))
 
         self.initUI()
         self.Show()
 
     def updateMem(self):
         for x in range(len(self.em.processor.mem.memspace)):
-            self.mem_list[x+1] = Int16(x).__str__() + ':  ' + Int16(self.em.processor.mem.memspace[x]).__str__()
+            self.mem_list[x+1] = str(Int16(2*x)) + ':  ' + str(Int16(self.em.processor.mem.memspace[x]))
         self.lst.Set(self.mem_list)
 
     def initUI(self):
@@ -38,7 +39,7 @@ class MemWindow(wx.Frame):
         panel.Fit()
 
         self.SetSize((500, 500))
-        self.SetTitle('MIPS GUI thing')
+        self.SetTitle('Memory Panel')
         self.Centre()
 
 
@@ -46,7 +47,7 @@ class frame(wx.Frame):
 
     def __init__(self, parent, title):
         super(frame, self).__init__(parent, title=title, size=(500, 500))
-        self.process = Emulator()
+        self.process = None
         self.strings = ["REGISTERS:", "R0 :", "R1 :", "R2 :", "R3 :", "R4 :", "R5 :", "R6 :", "R7 :", "R8 :", "R9 :", "R10:", "R11:",
                          "PC :", "RA :", "SP :", "AR :"]
         self.InitUI()
@@ -60,25 +61,37 @@ class frame(wx.Frame):
                          "PC :", "RA :", "SP :", "AR :"]
         self.strings = ["REGISTERS:"]
         for x in range(len(self.regs)):
-            string = self.regnames[x] + self.regs[x].__str__()
+            string = self.regnames[x] + str(self.regs[x])
             #print(string)
             self.strings.append(string)
+        
+        if self.process.processor.instr:
+            opnames = ["nop", "add", "addi", "sub", "subi", "mul", "muli", "div",
+                "divi", "shift", "li", "mov", "cmp", "and", "andi", "or", "ori",
+                "xor", "xori", "not", "bic", "lda", "ldc", "ldo", "str", "sto",
+                "b", "br", "call", "ret", "single-op", "syscall"]
+            self.opstr = opnames[(self.process.processor.instr[0] & 0xF8) >> 3]
 
-        value = (self.process.processor.instr[0] & 0xF8) >> 3
-        key_list = list(Instruction.opcode_table.keys())
-        val_list = list(Instruction.opcode_table.values())
-        self.opstr = key_list[val_list.index(value)]
-
-        self.currentop = Int16(int.from_bytes(self.process.processor.instr, "big"))
+            self.currentop = Int16(int.from_bytes(self.process.processor.instr, "big"))
+        else:
+            self.opstr = '\t'
         #print(self.currentop.__str__())
         # print(key_list[val_list.index(value)])
 
+    def SetStrings(self):
+        self.UpdateRegs()
+        self.lst.Set(self.strings)
+        self.my_text.SetLabel("Current opcode: " + self.opstr
+                              + "              Current instr: " + str(self.currentop))
+        if self.newFrame != None:
+            self.newFrame.updateMem()
+
     def InitUI(self):
         toolbar = self.CreateToolBar()
-        runtool = toolbar.AddTool(wx.ID_ANY, 'Step forward', wx.Bitmap('step.png'))
-        qtool = toolbar.AddTool(wx.ID_ANY, 'Quit', wx.Bitmap('exit.png'))
-        opentool = toolbar.AddTool(wx.ID_ANY, 'Open file', wx.Bitmap('open.png'))
-        memtool = toolbar.AddTool(wx.ID_ANY, 'mem viewer', wx.Bitmap('mem.png'))
+        runtool = toolbar.AddTool(wx.ID_ANY, 'Step forward', wx.Bitmap('resources\\step.png'))
+        qtool = toolbar.AddTool(wx.ID_ANY, 'Quit', wx.Bitmap('resources\\exit.png'))
+        opentool = toolbar.AddTool(wx.ID_ANY, 'Open file', wx.Bitmap('resources\\open.png'))
+        memtool = toolbar.AddTool(wx.ID_ANY, 'mem viewer', wx.Bitmap('resources\\mem.png'))
         toolbar.Realize()
 
         panel = wx.Panel(self)
@@ -103,28 +116,35 @@ class frame(wx.Frame):
         self.Bind(wx.EVT_TOOL, self.onMem, memtool)
 
         self.SetSize((500, 500))
-        self.SetTitle('MIPS GUI thing')
+        self.SetTitle('Computation Utility Machine EMUlator')
         self.Centre()
 
     def onMem(self, e):
+        if self.process is None:
+            msg = wx.MessageDialog(self, "No executable has been loaded", style=wx.OK)
+            msg.ShowModal()
+            return
         self.newFrame = MemWindow('mem win', self.process)
 
     def OnQuit(self, e):
         self.Close()
 
     def OnStep(self, e):
-        self.process.run()
-        self.UpdateRegs()
-        self.lst.Set(self.strings)
-        self.my_text.SetLabel("Current opcode: " + self.opstr
-                              + "              Current instr: " + self.currentop.__str__())
-        print("Step once")
-        if(self.newFrame != None):
-            self.newFrame.updateMem()
+        if self.process is None:
+            msg = wx.MessageDialog(self, "No executable has been loaded", style=wx.OK)
+            msg.ShowModal()
+            return
+
+        error = self.process.run()
+        if error:
+            msg = wx.MessageDialog(self, error, style=wx.OK)
+            msg.ShowModal()
+
+        self.SetStrings()
 
     def onOpen(self, event):
         wildcard = "Executables (*.cum)|*.cum"
-        dialog = wx.FileDialog(self, "Open Text Files", wildcard=wildcard,
+        dialog = wx.FileDialog(self, "Open Executable", wildcard=wildcard,
                                style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
         if dialog.ShowModal() == wx.ID_CANCEL:
@@ -133,11 +153,14 @@ class frame(wx.Frame):
         path = dialog.GetPath()
 
         if os.path.exists(path):
+            self.process = Emulator()
             self.process.setup(path)
-            print("success")
+            self.SetStrings()
         else:
-            print("failed")
-        #self.UpdateRegs()
+            msg = wx.MessageDialog(self, "File does not exist!", style=wx.OK)
+            msg.ShowModal()
+        
+        
 
 def main():
     app = wx.App()

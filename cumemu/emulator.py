@@ -1,3 +1,5 @@
+from random import randint
+
 import cumemu.exceptions as ex
 
 from cumemu.processor import Processor
@@ -14,11 +16,20 @@ class Emulator:
             print(len(bitstr))
             instr_gen = ((bitstr[i] << 8) | bitstr[i+1] for i in range(0, len(bitstr), 2))
             for i, instr in enumerate(instr_gen):
-                print(instr)
                 self.mem.write(i<<1, instr)
 
     def run(self):
         try:
-            return self.processor.run()
+            self.processor.run()
         except ex.SyscallInterrupt:
-            print("syscall caught!")
+            cmd = self.regs.read(15).actual
+            if cmd == 0:
+                return "Program has halted."
+            elif cmd == 1:
+                self.regs.read(15).set(randint(-500, 500))
+            else:
+                return f"Syscall command '{cmd}' not supported."
+        except ex.MemoryAccessFault:
+            return "Memory access out of bounds."
+        except ZeroDivisionError:
+            return "Division by zero."

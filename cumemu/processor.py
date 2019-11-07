@@ -9,6 +9,7 @@ class Processor:
         self.alu = comp.ALU()
         self.mem = comp.Memory()
         self.ctrl = comp.ControlUnit()
+        self.instr = None
 
     def call(self):
         sp = self.reg_file.read(14).actual
