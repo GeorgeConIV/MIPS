@@ -137,8 +137,12 @@ class frame(wx.Frame):
 
         error = self.process.run()
         if error:
-            msg = wx.MessageDialog(self, error, style=wx.OK)
-            msg.ShowModal()
+            if error == "user entry":
+                x = wx.GetNumberFromUser("Syscall", "Enter a number", "User Entry", 5, min=1, max=25, parent=self)
+                self.process.setAccumulator(max(x, 0))
+            else:
+                msg = wx.MessageDialog(self, error, style=wx.OK)
+                msg.ShowModal()
 
         self.SetStrings()
 
