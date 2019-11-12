@@ -14,7 +14,6 @@ shifts:
         asr     r2, 3
         b.eqz   shifts
 
-        tar     r8, r10
         mov     r9, r11
         cmp     r0, r1
         and     r0, r1 

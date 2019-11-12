@@ -110,14 +110,14 @@ class ControlUnit:
 
     def checkCond(self, op):
         return [
-            lambda: True,                               # NULL
-            lambda: self.z == 1,                        # EQ
-            lambda: self.z != 1,                        # NE
-            lambda: self.n != self.v,                   # LT
-            lambda: not self.z or not self.n != self.v, # GT
-            lambda: self.z or self.n != self.v,         # LTE
-            lambda: not self.n != self.v,               # GTE
-            lambda: self.z == 1                         # EQZ
+            lambda: True,                                   # NULL
+            lambda: self.z == True,                         # EQ
+            lambda: self.z == False,                        # NE
+            lambda: self.n != self.v,                       # LT
+            lambda: self.z == False and self.n == self.v,   # GT
+            lambda: self.z == True or self.n != self.v,     # LTE
+            lambda: self.n == self.v,                       # GTE
+            lambda: self.z == True                          # EQZ
         ][op]()
 
     def updateSigs(self, RegWr = False, Push = False, Pop = False, RegDst = 0, ImmSel = 0,
@@ -174,7 +174,7 @@ class ControlUnit:
             lambda: self.updateSigs(MemWr=True),                        # STO
             lambda: self.updateSigs(BrSel=1),                           # B
             lambda: self.updateSigs(BrSel=2),                           # BR
-            lambda: self.updateSigs(Call=True, BrSel=1),                # CALL
+            lambda: self.updateSigs(Call=True, BrSel=1, BAdd=1),        # CALL
             lambda: self.updateSigs(Ret=True),                          # RET
             lambda: None,                                               # single-op
             lambda: self.updateSigs()                                   # SYSCALL

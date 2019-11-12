@@ -10,6 +10,9 @@ class Processor:
         self.mem = comp.Memory()
         self.ctrl = comp.ControlUnit()
         self.instr = None
+        self.reg_file = comp.RegisterFile()
+        self.reg_file.write(14, 0x3FE)
+        self.alu = comp.ALU()
 
     def call(self):
         sp = self.reg_file.read(14).actual
@@ -56,11 +59,14 @@ class Processor:
             writeback = [mem_out, alu_out, rt_out, imm][self.ctrl.WbSel]
             reg_dst = [15, self.decoder.rs][self.ctrl.RegDst]
             self.reg_file.write(reg_dst, writeback)
-        
+
+        sp = self.reg_file.read(14)
         if self.ctrl.Push:
-            self.reg_file.read(14).set(sp + Int16(-2))
+            self.mem.write(sp.actual, rs_out)
+            sp.set(sp + Int16(-2))
         elif self.ctrl.Pop:
-            self.reg_file.read(14).set(sp + Int16(2))
+            self.reg_file.write(self.decoder.rs, self.mem.read(sp.actual))
+            sp.set(sp + Int16(2))
         elif self.ctrl.Call:
             self.call()
         elif self.ctrl.Ret:
